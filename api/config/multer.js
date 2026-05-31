@@ -29,6 +29,10 @@ function getUploadPrefix(req, fileType) {
     return `raw/users/${sanitizeSegment(userId)}/posts/${fileType}`
   }
 
+  if (routeHint.includes("/day-pages") || routeHint.includes("/day-page")) {
+    return `public/users/${sanitizeSegment(userId)}/day-pages/${fileType}`
+  }
+
   if (routeHint.includes("/user")) {
     return `public/users/${sanitizeSegment(userId)}/profile/${fileType}`
   }
@@ -50,8 +54,10 @@ const storageTypes = {
     filename: (req, file, cb) => {
       crypto.randomBytes(16, (err, hash) => {
         if (err) return cb(err)
-        const fileName = `${hash.toString("hex")}-${file.originalname}`
-        file.url = `/uploads/${fileName}`
+        const safeName = sanitizeSegment(file.originalname, "upload")
+        const fileName = `${hash.toString("hex")}-${safeName}`
+        // Set file.key to match what createMediaDocsMW expects (mirrors multer-s3 behaviour)
+        file.key = fileName
         cb(null, fileName)
       })
     },

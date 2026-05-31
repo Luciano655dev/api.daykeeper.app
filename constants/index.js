@@ -77,6 +77,14 @@ module.exports = {
       maxTitleLength: 50,
     },
   },
+  dayPage: {
+    maxBlocksPerPage: 100,
+    maxTextBlockLength: 50000,
+    maxTaskTitleLength: 160,
+    maxEventTitleLength: 120,
+    maxEventDescriptionLength: 2000,
+    maxCommentLength: 500,
+  },
 
   inappropriateLabels: [
     // for rekognition

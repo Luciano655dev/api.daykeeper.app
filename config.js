@@ -15,7 +15,7 @@ module.exports = {
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     snsTopicArn: process.env.SNS_TOPIC_ARN,
     rekogRoleArn: process.env.REKOG_ROLE_ARN,
-    storageType: "s3", // process.env.STORAGE_TYPE
+    storageType: process.env.STORAGE_TYPE || "s3",
     defaultRegion: process.env.AWS_DEFAULT_REGION,
   },
   google: {

@@ -1,11 +1,10 @@
 const Followers = require("../../models/Followers")
 const getDataWithPages = require("../getDataWithPages")
-const { feedUserMixedPipeline } = require("../../repositories/index.js")
+const { feedDayPagePipeline } = require("../../repositories/index.js")
 
 const {
   success: { fetched },
   maxPageSize: DEFAULT_MAXPAGESIZE,
-  maxPostsPerUser: DEFAULT_MAXPOSTSPERUSER,
 } = require("../../../constants/index")
 
 const feed = async (props) => {
@@ -15,11 +14,6 @@ const feed = async (props) => {
       ? Number(props.maxPageSize)
       : DEFAULT_MAXPAGESIZE
     : DEFAULT_MAXPAGESIZE
-  const maxPostsPerUser = props.maxPostsPerUser
-    ? Number(props.maxPostsPerUser) <= DEFAULT_MAXPOSTSPERUSER
-      ? Number(props.maxPostsPerUser)
-      : DEFAULT_MAXPOSTSPERUSER
-    : DEFAULT_MAXPOSTSPERUSER
 
   const orderMode = (props.order || "recent").toLowerCase()
   const orderForPaging =
@@ -42,11 +36,7 @@ const feed = async (props) => {
     const response = await getDataWithPages(
       {
         type: "User",
-        pipeline: feedUserMixedPipeline(loggedUser, {
-          dateStr,
-          daysWindow,
-          maxPostsPerUser,
-        }),
+        pipeline: feedDayPagePipeline(loggedUser, { dateStr, daysWindow }),
         order: orderForPaging,
         page,
         maxPageSize,

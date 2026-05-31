@@ -1,10 +1,8 @@
 const Followers = require("../../models/Followers")
 const getDataWithPages = require("../getDataWithPages")
 const {
-  searchPostPipeline,
   searchUserPipeline,
-  searchEventPipeline,
-  searchTaskPipeline,
+  searchDayPagePipeline,
 } = require("../../repositories")
 
 const {
@@ -18,9 +16,8 @@ function normalizeSearchType(input) {
     .toLowerCase()
 
   if (t === "user" || t === "users") return "User"
-  if (t === "event" || t === "events") return "Event"
-  if (t === "task" || t === "tasks") return "Task"
-  return "Post"
+  if (t === "daypage" || t === "day_page" || t === "page") return "DayPage"
+  return "DayPage"
 }
 
 const search = async (props) => {
@@ -43,32 +40,10 @@ const search = async (props) => {
       followerId: loggedUser._id,
     })
 
-    // Specific Filters
-    const now = new Date()
-    let filterPipe = {}
-    const filter = String(props.filter || "")
-      .trim()
-      .toLowerCase()
-    if (type == "Event") {
-      if (filter === "upcoming") filterPipe = { dateStart: { $gt: now } }
-      if (filter === "past") filterPipe = { dateStart: { $lt: now } }
-      if (filter === "ongoing")
-        filterPipe = { dateStart: { $lte: now }, dateEnd: { $gte: now } }
-    }
-
-    if (type === "Task") {
-      if (filter === "upcoming") filterPipe = { date: { $gt: now } }
-      if (filter === "past") filterPipe = { date: { $lt: now } }
-    }
-
     const pipeline =
-      type === "Post"
-        ? searchPostPipeline(searchQuery, loggedUser)
-        : type === "User"
+      type === "User"
         ? searchUserPipeline(searchQuery, loggedUser)
-        : type === "Event"
-        ? searchEventPipeline(searchQuery, filterPipe, loggedUser)
-        : searchTaskPipeline(searchQuery, filterPipe, loggedUser)
+        : searchDayPagePipeline(searchQuery, loggedUser)
 
     const response = await getDataWithPages(
       {

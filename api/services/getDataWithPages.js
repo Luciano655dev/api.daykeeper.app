@@ -29,6 +29,9 @@ const MODEL_BY_TYPE = {
   Task: require("../models/DayTask"),
   Event: require("../models/DayEvent"),
   Notification: require("../models/Notification"),
+  DayPageComment: require("../models/DayPageComment"),
+  DayPageLike: require("../models/DayPageLike"),
+  DayPage: require("../models/DayPage"),
 }
 
 const getDataWithPages = async (

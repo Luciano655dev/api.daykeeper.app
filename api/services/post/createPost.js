@@ -36,13 +36,6 @@ const createPost = async (req) => {
       allMediaPublic = freshMedia.every((m) => m.status === "public")
     }
 
-    console.log("[post] createPost", {
-      userId: loggedUser._id,
-      mediaIds: mediaDocs.map((m) => m._id),
-      mediaStatuses,
-      allMediaPublic,
-    })
-
     const postStatus = allMediaPublic ? "public" : "pending"
 
     const post = await Post.create({
@@ -64,7 +57,7 @@ const createPost = async (req) => {
     }
 
     if (mediaDocs.length) {
-      await Promise.all(
+      await Promise.allSettled(
         mediaDocs.map((media) =>
           Media.findByIdAndUpdate(media._id, {
             usedIn: { model: "Post", refId: post._id },
@@ -99,18 +92,7 @@ const createPost = async (req) => {
         await Post.updateOne({ _id: post._id }, { $set: { status: finalStatus } })
       }
 
-      console.log("[post] createPost final status", {
-        postId: post._id,
-        finalStatus,
-        mediaStatuses: finalMedia.map((m) => m.status),
-      })
     }
-
-    console.log("[post] createPost saved", {
-      postId: post._id,
-      status: postStatus,
-      mediaCount: mediaDocs.length,
-    })
 
     await notifyPostMentions({
       postId: post._id,

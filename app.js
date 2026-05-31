@@ -66,6 +66,10 @@ const allowedOrigins = (process.env.CORS_ORIGINS || "")
 if (allowedOrigins.length === 0) {
   allowedOrigins.push("https://daykeeper.app", "https://www.daykeeper.app")
 }
+
+if (!isProd) {
+  allowedOrigins.push("http://localhost:3000", "http://localhost:3001", "http://localhost:3002")
+}
 const allowAllCors = process.env.CORS_ALLOW_ALL === "true"
 
 app.use(
@@ -150,6 +154,15 @@ if (startJobs) {
   require("./api/jobs/index.js")
 }
 
+// --------- Local image serving (development only) ---------
+// In production STORAGE_TYPE must be "s3". Only enable local static serving
+// when explicitly opted in, so this can never accidentally run in prod.
+if ((process.env.STORAGE_TYPE || "s3") === "local") {
+  const localUploadsDir = require("path").join(__dirname, "api", "tmp", "uploads")
+  app.use("/uploads", express.static(localUploadsDir))
+  console.log(`\x1b[33m[local] Serving uploads from ${localUploadsDir}\x1b[0m`)
+}
+
 // --------- Routes ---------
 app.get("/ping", (req, res) => res.status(200).send("PONG"))
 
@@ -157,6 +170,7 @@ app.use("/webhooks", require("./routes/webhooks"))
 app.use("/auth", authLimiter, require("./routes/authRoutes"))
 app.use("/post", require("./routes/postRoutes"))
 app.use("/day", require("./routes/dayRoutes"))
+app.use("/day-pages", require("./routes/dayPageRoutes"))
 app.use("/admin", require("./routes/adminRoutes"))
 app.use("/media", require("./routes/mediaRoutes"))
 app.use("/notifications", require("./routes/notificationRoutes"))

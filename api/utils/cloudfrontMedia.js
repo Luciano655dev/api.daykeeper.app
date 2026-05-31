@@ -1,5 +1,21 @@
 const { getSignedUrl } = require("@aws-sdk/cloudfront-signer")
 
+// ── Local-storage URL helpers ─────────────────────────────────────────────
+// When STORAGE_TYPE=local, files live on disk and are served as static files.
+// This is only for local development — never set STORAGE_TYPE=local in prod.
+
+function isLocalStorage() {
+  return (process.env.STORAGE_TYPE || "s3") === "local"
+}
+
+function buildLocalMediaUrl(key) {
+  const base = (process.env.LOCAL_UPLOAD_BASE_URL || `http://localhost:${process.env.PORT || 3000}`)
+    .replace(/\/+$/, "")
+  return `${base}/uploads/${key}`
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+
 function normalizeObjectKey(key) {
   if (typeof key !== "string") return ""
   return key.trim().replace(/^\/+/, "")
@@ -65,6 +81,11 @@ function buildMediaUrlFromKey(objectKey, options = {}) {
   if (/^https?:\/\//i.test(trimmed)) return trimmed
 
   const key = normalizeObjectKey(trimmed)
+
+  // Local development: skip CloudFront entirely
+  if (isLocalStorage()) {
+    return buildLocalMediaUrl(key)
+  }
 
   const baseUrl = getCloudFrontBaseUrl()
   if (isPublicKey(key)) {

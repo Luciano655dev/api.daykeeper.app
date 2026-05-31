@@ -14,7 +14,7 @@ async function createMediaDocsMW(req, res, next) {
 
         const doc = await Media.create({
           title: file.originalname,
-          key: file.key,
+          key: file.key ?? file.filename,
           type,
           url: "",
           placeId: placesIds[index] || null,

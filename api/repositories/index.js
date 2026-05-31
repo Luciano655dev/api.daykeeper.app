@@ -26,8 +26,12 @@ const getTasksByDatePipeline = require("./pipelines/day/tasks/getTasksByDatePipe
 
 const searchEventPipeline = require("./pipelines/search/searchEventPipeline")
 const searchTaskPipeline = require("./pipelines/search/searchTaskPipeline")
+const searchDayPagePipeline = require("./pipelines/search/searchDayPagePipeline")
 const feedPostPipeline = require("./pipelines/search/feedPostPipeline")
 const feedUserMixedPipeline = require("./pipelines/search/feedUserMixedPipeline")
+const feedDayPagePipeline = require("./pipelines/search/feedDayPagePipeline")
+const getDayPagePipeline = require("./pipelines/dayPage/getDayPagePipeline")
+const getDayPageCommentsPipeline = require("./pipelines/dayPage/getDayPageCommentsPipeline")
 
 // Hide Projects
 const hideUserData = require(`./hideProject/hideUserData`)
@@ -44,12 +48,18 @@ module.exports = {
   reportedElementPipeline,
   feedPostPipeline,
   feedUserMixedPipeline,
+  feedDayPagePipeline,
+
+  // DAY PAGE
+  getDayPagePipeline,
+  getDayPageCommentsPipeline,
 
   // SEARCH
   searchPostPipeline,
   searchUserPipeline,
   searchEventPipeline,
   searchTaskPipeline,
+  searchDayPagePipeline,
 
   // BANS
   bannedElementPipeline,
