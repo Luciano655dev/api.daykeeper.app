@@ -240,6 +240,7 @@ const worker = new Worker(
 
     debugLog("TYPE: VIDEO")
     // Vídeo
+    fs.mkdirSync(tempDir, { recursive: true })
     const videoPath = path.join(
       tempDir,
       `${Date.now()}-${key.split("/").pop()}`,
@@ -249,35 +250,42 @@ const worker = new Worker(
       .promise()
     fs.writeFileSync(videoPath, s3File.Body)
 
-    const thumbs = await generateVideoThumbnails(videoPath, tempDir)
-    let isSafe = true
+    let thumbs = []
+    try {
+      thumbs = await generateVideoThumbnails(videoPath, tempDir)
+      let isSafe = true
 
-    for (const thumb of thumbs) {
-      const buffer = fs.readFileSync(thumb)
-      const res = await rekognition
-        .detectModerationLabels({ Image: { Bytes: buffer } })
-        .promise()
+      for (const thumb of thumbs) {
+        const buffer = fs.readFileSync(thumb)
+        const res = await rekognition
+          .detectModerationLabels({ Image: { Bytes: buffer } })
+          .promise()
 
-      const hasBadLabel = res.ModerationLabels.some(
-        (label) =>
-          inappropriateLabels.includes(label.Name) && label.Confidence >= 90,
-      )
+        const hasBadLabel = res.ModerationLabels.some(
+          (label) =>
+            inappropriateLabels.includes(label.Name) && label.Confidence >= 90,
+        )
 
-      if (hasBadLabel) {
-        isSafe = false
-        break
+        if (hasBadLabel) {
+          isSafe = false
+          break
+        }
+      }
+
+      const result = await updateMedia(mediaId, isSafe)
+      await notifyModerationFinished({
+        media: result?.media,
+        newStatus: result?.newStatus,
+        fallbackUserId: job.data?.uploadedBy,
+      })
+    } finally {
+      if (fs.existsSync(videoPath)) fs.unlinkSync(videoPath)
+      if (thumbs.length > 0) {
+        const jobDir = path.dirname(thumbs[0])
+        thumbs.forEach((thumb) => { if (fs.existsSync(thumb)) fs.unlinkSync(thumb) })
+        if (fs.existsSync(jobDir)) fs.rmSync(jobDir, { recursive: true, force: true })
       }
     }
-
-    fs.unlinkSync(videoPath)
-    thumbs.forEach((thumb) => fs.unlinkSync(thumb))
-
-    const result = await updateMedia(mediaId, isSafe)
-    await notifyModerationFinished({
-      media: result?.media,
-      newStatus: result?.newStatus,
-      fallbackUserId: job.data?.uploadedBy,
-    })
   },
   {
     connection,
