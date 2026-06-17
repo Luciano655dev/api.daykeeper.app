@@ -37,7 +37,7 @@ const postValidationPipeline = (mainUser) => {
     },
     { $unwind: "$user_info" },
 
-    // Join media (public media only)
+    // Join media — include pending so the owner can see their video while it's being reviewed
     {
       $lookup: {
         from: "media",
@@ -72,7 +72,7 @@ const postValidationPipeline = (mainUser) => {
                       },
                     ],
                   },
-                  { $eq: ["$status", "public"] },
+                  { $not: { $in: ["$status", ["rejected", "deleted"]] } },
                 ],
               },
             },
@@ -188,8 +188,20 @@ const postValidationPipeline = (mainUser) => {
             ],
           },
 
-          // Post must be public (status)
-          { status: "public" },
+          // Post must be public — or pending and owned by the viewer
+          {
+            $or: [
+              { status: "public" },
+              {
+                $expr: {
+                  $and: [
+                    { $eq: ["$status", "pending"] },
+                    { $eq: ["$user_info._id", mainUserId] },
+                  ],
+                },
+              },
+            ],
+          },
 
           // post privacy rules
           {

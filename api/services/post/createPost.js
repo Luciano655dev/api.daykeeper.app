@@ -104,7 +104,11 @@ const createPost = async (req) => {
 
     await updateStreak(loggedUser._id, loggedUser?.timeZone)
 
-    return created("post", { post })
+    // Return full media docs so the frontend knows type/status immediately
+    const postObj = post.toObject()
+    postObj.media = mediaDocs.map((m) => (m.toObject ? m.toObject() : m))
+
+    return created("post", { post: postObj })
   } catch (error) {
     for (let mediaDoc of mediaDocs) {
       await deleteFile({ key: mediaDoc.key }).catch(() => null)
