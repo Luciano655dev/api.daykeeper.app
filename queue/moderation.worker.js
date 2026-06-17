@@ -245,10 +245,16 @@ const worker = new Worker(
       tempDir,
       `${Date.now()}-${key.split("/").pop()}`,
     )
-    const s3File = await s3
-      .getObject({ Bucket: bucketName, Key: key })
-      .promise()
-    fs.writeFileSync(videoPath, s3File.Body)
+    // Stream S3 object directly to disk — avoids loading the whole video into RAM
+    await new Promise((resolve, reject) => {
+      const writeStream = fs.createWriteStream(videoPath)
+      s3.getObject({ Bucket: bucketName, Key: key })
+        .createReadStream()
+        .on("error", reject)
+        .pipe(writeStream)
+        .on("finish", resolve)
+        .on("error", reject)
+    })
 
     let thumbs = []
     try {

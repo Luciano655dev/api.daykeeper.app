@@ -47,27 +47,24 @@ function probeDurationSeconds(videoPath) {
 async function generateVideoThumbnails(
   videoPath,
   outputDir,
-  count = 10,
-  { maxWidth = 960, quality = 5 } = {},
+  { maxWidth = 480, quality = 5 } = {},
 ) {
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
   const jobDir = fs.mkdtempSync(path.join(outputDir, "job-"))
   const ext = "jpg"
-  const outPattern = path.join(jobDir, `thumb-%03d.${ext}`)
 
   // Get duration to spread frames across whole video
   const duration = await probeDurationSeconds(videoPath)
 
-  // pick count timestamps, skipping first/last 5% to avoid black frames
+  // 1 frame for short clips, 2 for medium, 3 for long — enough for moderation
+  const count = duration < 30 ? 1 : duration < 180 ? 2 : 3
+
+  // pick timestamps skipping first/last 5% to avoid black frames
   const start = duration * 0.05
   const end = duration * 0.95
   const step = count > 1 ? (end - start) / (count - 1) : 0
 
-  // ffmpeg filter:
-  // - select frames around chosen timestamps using `select` with `between(t,...)` is messy
-  // Better approach: use -ss per frame (loop). It's slower but stable and simple.
-  // Since count is small (<=10), this is totally fine.
   const files = []
 
   for (let i = 0; i < count; i++) {
