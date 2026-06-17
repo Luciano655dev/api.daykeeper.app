@@ -84,11 +84,15 @@ const updateMedia = async (mediaId, isSafe) => {
     )
     if (!media) return { media: null, newStatus }
 
-    if (media?.usedIn?.model == "Post") {
-      const post = await Post.findById(media?.usedIn?.refId).select(
-        "_id user privacy media",
-      )
-      if (isSafe && post) {
+    const postId = media?.usedIn?.model === "Post"
+      ? media.usedIn.refId
+      : null
+    const post = postId
+      ? await Post.findById(postId).select("_id user privacy media")
+      : await Post.findOne({ media: mediaId }).select("_id user privacy media")
+
+    if (post) {
+      if (isSafe) {
         await ensureSinglePostMediaPrivacy({ media, post })
       }
 

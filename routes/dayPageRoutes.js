@@ -21,6 +21,8 @@ const {
 const checkTokenMW = require("../middlewares/checkTokenMW")
 const MulterConfig = require("../api/config/multer")
 const handleMulterError = require("../middlewares/handleMulterError")
+const convertImageMW = require("../middlewares/convertImageMW")
+const uploadToStorageMW = require("../middlewares/uploadToStorageMW")
 const createMediaDocsMW = require("../middlewares/createMediaDocsMW")
 const detectInappropriateFileMW = require("../middlewares/detectInappropriateFileMW")
 
@@ -37,6 +39,8 @@ router.post(
   checkTokenMW,
   imageUpload.single("file"),
   handleMulterError,
+  convertImageMW,
+  uploadToStorageMW,
   createMediaDocsMW,
   uploadImageBlock,
 )
@@ -45,6 +49,8 @@ router.post(
   checkTokenMW,
   mediaUpload.array("files", 5),
   handleMulterError,
+  convertImageMW,
+  uploadToStorageMW,
   createMediaDocsMW,
   detectInappropriateFileMW,
   uploadMediaBlocks,

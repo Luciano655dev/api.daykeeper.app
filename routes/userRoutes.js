@@ -31,6 +31,8 @@ const checkValidUserMW = require("../middlewares/checkValidUserMW")
 const checkBannedUserMW = require("../middlewares/checkBannedUserMW")
 
 const detectInappropriateFileMW = require("../middlewares/detectInappropriateFileMW")
+const convertImageMW = require("../middlewares/convertImageMW")
+const uploadToStorageMW = require("../middlewares/uploadToStorageMW")
 
 // Routes
 router.get("/blocks", checkTokenMW, getBlockedUsers)
@@ -40,6 +42,8 @@ router.put(
   checkTokenMW,
   multer(multerConfig("image")).single("file"),
   handleMulterError,
+  convertImageMW,
+  uploadToStorageMW,
   detectInappropriateFileMW,
   userEditValidation,
   updateUser

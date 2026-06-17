@@ -25,6 +25,8 @@ const handleMulterError = require("../middlewares/handleMulterError") // status 
 const postValidation = require("../middlewares/validations/post/postValidation")
 const postEditValidation = require("../middlewares/validations/post/postEditValidation")
 const createMediaDocsMW = require("../middlewares/createMediaDocsMW")
+const convertImageMW = require("../middlewares/convertImageMW")
+const uploadToStorageMW = require("../middlewares/uploadToStorageMW")
 
 const checkTokenMW = require("../middlewares/checkTokenMW")
 const calculateTrustScoreMW = require("../middlewares/calculateTrustScoreMW")
@@ -38,6 +40,8 @@ router.post(
   checkTokenMW,
   multer(multerConfig("both")).array("files", 5),
   handleMulterError,
+  convertImageMW,
+  uploadToStorageMW,
   createMediaDocsMW,
   detectInappropriateFileMW,
   postValidation,
@@ -48,6 +52,8 @@ router.put(
   checkTokenMW,
   multer(multerConfig("both")).array("files", 5),
   handleMulterError,
+  convertImageMW,
+  uploadToStorageMW,
   calculateTrustScoreMW,
   createMediaDocsMW,
   detectInappropriateFileMW,
