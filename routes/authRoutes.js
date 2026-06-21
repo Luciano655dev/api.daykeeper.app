@@ -5,6 +5,7 @@ const passportConfig = require("../api/config/passportAuth")
 
 const {
   login,
+  googleLogin,
   register,
   refresh,
   logout,
@@ -24,6 +25,12 @@ const rateLimit = require("../middlewares/rateLimit")
 const refreshLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
+  methods: ["POST"],
+})
+
+const googleLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
   methods: ["POST"],
 })
 
@@ -48,40 +55,8 @@ router.post(
 router.post("/refresh", refreshLimiter, refresh)
 router.post("/logout", logout)
 
-router.get(
-  "/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-  })
-)
-
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
-  async (req, res) => {
-    const {
-      signAccessToken,
-      makeRefreshToken,
-      storeRefreshToken,
-    } = require("../api/utils/tokens")
-
-    const accessToken = signAccessToken(req.user)
-    const refreshToken = makeRefreshToken()
-
-    await storeRefreshToken({
-      userId: req.user._id,
-      refreshToken,
-      deviceId: null,
-      ip: req.ip,
-      userAgent: req.headers["user-agent"],
-    })
-
-    return res.status(200).json({
-      message: "Google login success",
-      accessToken,
-      refreshToken,
-    })
-  }
-)
+// Unified Google sign-in: web (GIS) and mobile (expo-auth-session) both obtain a
+// Google ID token client-side and POST it here for server-side verification.
+router.post("/google", googleLimiter, googleLogin)
 
 module.exports = router

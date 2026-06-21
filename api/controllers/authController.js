@@ -3,6 +3,7 @@ const {
 } = require("../../constants/index")
 
 const login = require("../services/auth/login")
+const googleLogin = require("../services/auth/googleLogin")
 const register = require("../services/auth/register")
 const refresh = require("../services/auth/refresh")
 const logout = require("../services/auth/logout")
@@ -24,6 +25,22 @@ const loginController = async (req, res) => {
     })
 
     return res.status(code).json({ message, ...props })
+  } catch (error) {
+    return res.status(500).json({ message: serverError(error.message) })
+  }
+}
+
+// google login (verifies a Google ID token, then issues Daykeeper JWTs)
+const googleLoginController = async (req, res) => {
+  try {
+    const { code, message, props } = await googleLogin({
+      idToken: req.body?.idToken,
+      deviceId: req.body?.deviceId || null,
+      ip: req.ip,
+      userAgent: req.headers["user-agent"],
+    })
+
+    return res.status(code).json({ message, ...(props || {}) })
   } catch (error) {
     return res.status(500).json({ message: serverError(error.message) })
   }
@@ -156,6 +173,7 @@ const userDataController = async (req, res) => {
 
 module.exports = {
   login: loginController,
+  googleLogin: googleLoginController,
   register: registerController,
   refresh: refreshController,
   logout: logoutController,

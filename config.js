@@ -19,8 +19,10 @@ module.exports = {
     defaultRegion: process.env.AWS_DEFAULT_REGION,
   },
   google: {
-    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientId: process.env.GOOGLE_CLIENT_ID, // Web OAuth client
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    iosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
+    androidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID,
     apiKey: process.env.GOOGLE_API_KEY,
   },
   mail: {

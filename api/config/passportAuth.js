@@ -1,31 +1,10 @@
-const GoogleStrategy = require("passport-google-oauth20").Strategy
 const LocalStrategy = require("passport-local").Strategy
 const User = require("../models/User")
-const upsertGoogleUser = require("../services/auth/upsertGoogleUser")
 
-const {
-  google: { clientId, clientSecret },
-} = require("../../config")
-
+// Google sign-in is handled statelessly via POST /auth/google (ID-token
+// verification in services/auth/googleLogin.js), so no passport Google strategy
+// is registered here. Local strategy still backs POST /auth/login.
 module.exports = function (passport) {
-  passport.use(
-    new GoogleStrategy(
-      {
-        clientID: clientId,
-        clientSecret,
-        callbackURL: "/auth/google/callback",
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        try {
-          const user = await upsertGoogleUser(profile)
-          return done(null, user)
-        } catch (err) {
-          return done(err, false)
-        }
-      }
-    )
-  )
-
   passport.use(
     new LocalStrategy(
       { usernameField: "email", passwordField: "password" },
